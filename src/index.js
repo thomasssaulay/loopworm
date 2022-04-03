@@ -1,39 +1,23 @@
+/**
+ * Author: Thomas SAULAY
+ */
+
 import Phaser from 'phaser';
-import logoImg from './assets/logo.png';
 
-class MyGame extends Phaser.Scene
-{
-    constructor ()
-    {
-        super();
-    }
+import SceneGameOver from "./js/scenes/SceneGameOver";
+import SceneMainMenu from "./js/scenes/SceneMainMenu";
+import SceneMain from "./js/scenes/SceneMain";
 
-    preload ()
-    {
-        this.load.image('logo', logoImg);
-    }
-      
-    create ()
-    {
-        const logo = this.add.image(400, 150, 'logo');
-      
-        this.tweens.add({
-            targets: logo,
-            y: 450,
-            duration: 2000,
-            ease: "Power2",
-            yoyo: true,
-            loop: -1
-        });
-    }
-}
+import * as Globals from "./js/Globals";
 
 const config = {
     type: Phaser.AUTO,
-    parent: 'phaser-example',
+    parent: 'game-container',
+    backgroundColor: Globals.PALETTE[0],
     width: 800,
     height: 600,
-    scene: MyGame
+    // zoom: 2,
+    scene: [SceneMainMenu, SceneMain, SceneGameOver]
 };
 
 const game = new Phaser.Game(config);
