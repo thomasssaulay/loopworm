@@ -65,24 +65,42 @@ export default class Worm extends Phaser.GameObjects.Sprite {
         this.bodyPartList.splice(this.bodyPartList.length - 1, 0, new WormPart(this.scene, this, newTileInd));
         this.bodyPartList[this.bodyPartList.length - 2].sprite.x = this.bodyPartList[this.bodyPartList.length - 3].sprite.x;
         this.bodyPartList[this.bodyPartList.length - 2].sprite.y = this.bodyPartList[this.bodyPartList.length - 3].sprite.y;
-
-        // this.bodyPartList[this.bodyPartList.length - 1].refreshDirection();
-
-        this.bodySize++;
-        this.speed += 20;
-        console.log(this.bodyPartList);
-    }
-    decSize() {
-        this.bodyPartList[this.bodyPartList.length - 2].sprite.destroy();
-        this.bodyPartList.splice(this.bodyPartList.length - 2, 1);
-        this.bodyPartList[this.bodyPartList.length - 1].currentTile = this.bodyPartList[this.bodyPartList.length - 2].currentTile;
         this.bodyPartList[this.bodyPartList.length - 1].toRefresh = true;
 
         // this.bodyPartList[this.bodyPartList.length - 1].refreshDirection();
 
-        this.bodySize--;
-        this.speed -= 20;
-        // console.log(this.bodyPartList);
+        this.bodySize++;
+        this.speed += 50;
+    }
+    decSize() {
+        if (this.bodySize > 2) {
+            // TODO :: NOT WORKING PROPERLY
+            let toDelete = this.bodyPartList[this.bodyPartList.length - 2];
+            this.bodyPartList[this.bodyPartList.length - 1].movingTween.stop();
+            this.scene.tweens.add({
+                targets: this.bodyPartList[this.bodyPartList.length - 1].sprite,
+                x: this.bodyPartList[this.bodyPartList.length - 3].currentTile.x,
+                y: this.bodyPartList[this.bodyPartList.length - 3].currentTile.y,
+                ease: 'Linear',
+                duration: this.speed / 8,
+                onCompleteScope: this,
+                onCompleteArgs: toDelete,
+                onComplete: function() {
+                    //here
+                    toDelete.sprite.destroy();
+                }
+            });
+            this.bodyPartList.splice(this.bodyPartList.length - 2, 1);
+            this.bodyPartList[this.bodyPartList.length - 1].currentTile = this.bodyPartList[this.bodyPartList.length - 2].currentTile;
+            this.bodyPartList[this.bodyPartList.length - 1].toRefresh = true;
+
+            // this.bodyPartList[this.bodyPartList.length - 1].refreshDirection();
+
+            this.bodySize--;
+            this.speed -= 50;
+        } else {
+            console.log("DEAD")
+        }
     }
 
 }

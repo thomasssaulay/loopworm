@@ -174,3 +174,9 @@ export function clearMap(map) {
         }
     }
 }
+
+export function updateAvailablePath(path) {
+    let updatedPath = path;
+    //  TODO :: 
+    return updatedPath;
+}

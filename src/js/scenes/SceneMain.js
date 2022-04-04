@@ -1,7 +1,10 @@
 import Phaser from "phaser";
-import Worm from "../entities/Worm";
 import * as MapManager from "../map/MapManager"
+import * as EntityManager from "../entities/EntityManager"
 import * as Globals from "../Globals"
+import Worm from "../entities/Worm";
+import Orb from "../entities/Orb";
+import LoadingBar from "../hud/LoadingBar";
 
 export default class SceneMain extends Phaser.Scene {
     constructor() {
@@ -23,6 +26,18 @@ export default class SceneMain extends Phaser.Scene {
             frameWidth: 48,
             frameHeight: 48
         });
+        this.load.spritesheet("orb", "sprites/entities/orb.png", {
+            frameWidth: 32,
+            frameHeight: 32
+        });
+        this.load.spritesheet("norb", "sprites/entities/norb.png", {
+            frameWidth: 32,
+            frameHeight: 32
+        });
+        this.load.spritesheet("spike", "sprites/entities/spike.png", {
+            frameWidth: 32,
+            frameHeight: 32
+        });
     }
 
     create() {
@@ -39,10 +54,16 @@ export default class SceneMain extends Phaser.Scene {
         this.mapConfig = { x: 20, y: 12, border: 2 };
         this.map = MapManager.drawMap(this, this.mapConfig, { x: 0, y: -32 });
         this.path = MapManager.drawPath(this.map, this.mapConfig.border);
+        this.availablePath = this.path;
+
+        this.orbs = [];
+        this.spikes = [];
 
         this.worm = new Worm(this, this.path[0]);
         // this.worm.moveOnPath(this.path);
         this.worm.moveToNextTile();
+
+        this.bar = new LoadingBar(this, 128, 48, 80, 100);
 
         this.add
             .text(width / 2, 30, "LoooooopWorm", {
@@ -66,20 +87,10 @@ export default class SceneMain extends Phaser.Scene {
                 this.worm.incSize();
             }
             if (event.code === "ArrowUp") {
-                this.add.tween({
-                    targets: this.worm.bodyPartList[0].sprite,
-                    duration: 200,
-                    ease: "Linear",
-                    angle: this.worm.bodyPartList[0].sprite.angle - 90
-                });
+                EntityManager.spawnSpikeAtRandom(this);
             }
             if (event.code === "ArrowDown") {
-                this.add.tween({
-                    targets: this.worm.bodyPartList[0].sprite,
-                    duration: 200,
-                    ease: "Linear",
-                    angle: this.worm.bodyPartList[0].sprite.angle + 90
-                });
+                EntityManager.spawnOrbAtRandom(this);
             }
         });
     }

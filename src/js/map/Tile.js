@@ -157,8 +157,9 @@ export default class Tile extends Phaser.GameObjects.Sprite {
         //     }
         // }
 
-        console.warn(this.direction)
-        console.warn(this.indX, this.indY)
+        console.warn("direction", this.direction)
+        console.warn("indX indY", this.indX, this.indY)
+        console.warn("contains", this.contains)
 
         this.contour.clear();
     }
@@ -208,7 +209,7 @@ export default class Tile extends Phaser.GameObjects.Sprite {
                 frame = 12;
                 this.color = TILE_COLORS[2];
             }
-            this.topSprite = this.scene.add.sprite(this.x, this.y, this.type, frame);
+            this.topSprite = this.scene.add.sprite(this.x, this.y, this.type, frame).setDepth(3);
             this.topSprite.anims.create({
                 key: "idle",
                 frames: this.anims.generateFrameNames(this.type, {
@@ -221,6 +222,8 @@ export default class Tile extends Phaser.GameObjects.Sprite {
             this.topSprite.play("idle");
         }
     }
+
+    // ---
     setTypeBuilding(card) {
         this.type = "building";
 

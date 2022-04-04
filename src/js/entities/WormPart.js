@@ -63,6 +63,15 @@ export default class WormPart extends Phaser.GameObjects.Sprite {
 
                 if (!this.isHead && !this.isTail)
                     this.sprite.setRotation(newDir * (Math.PI / 180));
+
+            },
+            onUpdateScope: this,
+            onUpdate: function(tween) {
+                if (this.isTail) {
+                    if (tween.progress > 0.5 && tween.progress < 0.516) {
+                        this.refreshDirection();
+                    }
+                }
             },
             onCompleteScope: this,
             onComplete: function() {
@@ -109,6 +118,8 @@ export default class WormPart extends Phaser.GameObjects.Sprite {
                     }
                     this.worm.moveToNextTile();
                 }
+
+                this.tileDetection();
             }
         });
     }
@@ -212,10 +223,10 @@ export default class WormPart extends Phaser.GameObjects.Sprite {
         // 180 - west | 270 - north
 
         // TODO :: FORMATTING AND PRETTIFIYING THIS BAD CODE 
-        let index = this.currentTile.pathInd;
-        if (this.currentTile.pathInd >= this.scene.path.length - 1)
-            index = 0;
-        const curTile = this.scene.path[index + 1];
+        let index = this.currentTile.pathInd >= this.scene.path.length - 1 ? 0 : this.currentTile.pathInd;
+        // if (this.currentTile.pathInd >= this.scene.path.length - 1)
+        //     index = 0;
+        const curTile = this.scene.path[index];
         let angle = 0;
         if (curTile.indX < this.scene.map.length / 2) {
             if (curTile.indY < this.scene.map[0].length / 2) {
@@ -261,5 +272,11 @@ export default class WormPart extends Phaser.GameObjects.Sprite {
             }
         }
         this.sprite.angle = angle;
+    }
+
+    tileDetection() {
+        if (this.currentTile.contains.length > 0 && this.isHead) {
+            this.currentTile.contains[0].onCollide();
+        }
     }
 }
