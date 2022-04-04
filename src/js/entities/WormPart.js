@@ -13,6 +13,7 @@ export default class WormPart extends Phaser.GameObjects.Sprite {
         this.x = tile.x;
         this.y = tile.y;
         this.direction = tile.direction;
+        this.toRefresh = false;
         this.sprite = this.scene.add.sprite(this.x, this.y, "worm", 0).setDepth(0).setTint(Globals.PALETTE[1]);
 
 
@@ -90,6 +91,11 @@ export default class WormPart extends Phaser.GameObjects.Sprite {
                             ease: 'Linear',
                             duration: this.worm.speed / 2,
                         });
+                    }
+
+                    if (this.toRefresh) {
+                        this.refreshDirection();
+                        this.toRefresh = false;
                     }
                 }
 
@@ -201,66 +207,59 @@ export default class WormPart extends Phaser.GameObjects.Sprite {
         // }
 
     refreshDirection() {
-        // TODO :: FUNCTION REFRESH DIRECTION IN WORMPART
-        // Compute if top / bottom / left /right side of map and angle tail properly
-
         // Directions head/tail
         // 0 - east | 90 - down 
         // 180 - west | 270 - north
 
-        // TODO :: END OF PATH CASE !!!!!!
-        const nextTile = this.scene.path[this.currentTile.pathInd + 1];
+        // TODO :: FORMATTING AND PRETTIFIYING THIS BAD CODE 
+        let index = this.currentTile.pathInd;
+        if (this.currentTile.pathInd >= this.scene.path.length - 1)
+            index = 0;
+        const curTile = this.scene.path[index + 1];
         let angle = 0;
-        if (nextTile.indX < this.scene.map.length / 2) {
-            if (nextTile.indY < this.scene.map[0].length / 2) {
-                console.log("top left ", nextTile.indX, nextTile.indY, nextTile.direction);
-                if (nextTile.direction === 3)
+        if (curTile.indX < this.scene.map.length / 2) {
+            if (curTile.indY < this.scene.map[0].length / 2) {
+                // console.log("top left ", curTile.indX, curTile.indY, curTile.direction);
+                if (curTile.direction === 3)
                     angle = 0;
-                if (nextTile.direction === 1)
+                if (curTile.direction === 1)
                     angle = 270;
-                if (nextTile.direction === 5)
+                if (curTile.direction === 5)
                     angle = 0;
-                if (nextTile.direction === 0)
+                if (curTile.direction === 0)
                     angle = 270;
             } else {
-                console.log("bottom left ", nextTile.indX, nextTile.indY, nextTile.direction);
+                // console.log("bottom left ", curTile.indX, curTile.indY, curTile.direction);
+                if (curTile.direction === 4 || curTile.direction === 1 || curTile.direction === 3)
+                    angle = 180;
+                if (curTile.direction === 5)
+                    angle = 90;
+                if (curTile.direction === 0)
+                    angle = 270;
             }
         } else {
-            if (nextTile.indY < this.scene.map[0].length / 2) {
-                console.log("top right ", nextTile.indX, nextTile.indY, nextTile.direction);
-                if (nextTile.direction === 3)
+            if (curTile.indY < this.scene.map[0].length / 2) {
+                // console.log("top right ", curTile.indX, curTile.indY, curTile.direction);
+                if (curTile.direction === 3)
                     angle = 0;
-                if (nextTile.direction === 1)
+                if (curTile.direction === 1)
                     angle = 270;
-                if (nextTile.direction === 5)
+                if (curTile.direction === 5)
                     angle = 0;
-                if (nextTile.direction === 2)
+                if (curTile.direction === 2)
                     angle = 90;
-                if (nextTile.direction === 0)
+                if (curTile.direction === 0)
                     angle = 90;
             } else {
-                console.log("bottom right ", nextTile.indX, nextTile.indY, nextTile.direction);
+                // console.log("bottom right ", curTile.indX, curTile.indY, curTile.direction);
+                if (curTile.direction === 4 || curTile.direction === 1 || curTile.direction === 3)
+                    angle = 180;
+                if (curTile.direction === 5)
+                    angle = 90;
+                if (curTile.direction === 0)
+                    angle = 90;
             }
         }
         this.sprite.angle = angle;
-
-
-        // let angle = 0;
-        // if (this.current.direction === 1) {
-        //     if (t.indY === this.currentTile.indY)
-        //         angle = ;
-        //     else
-        //         angle = 90;
-        // }
-        // if (t.direction === 2 || t.direction === 4)
-        //     angle = -90;
-        // if (t.direction === 5) {
-        //     if (t.indX === this.currentTile.indX)
-        //         angle = 90;
-        //     else
-        //         angle = -90;
-        // }
-        // this.bodyPartList[this.bodyPartList.length - 1].sprite.angle = angle;
-
     }
 }
