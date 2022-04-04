@@ -87,7 +87,7 @@ export default class WormPart extends Phaser.GameObjects.Sprite {
                         this.scene.tweens.add({
                             targets: this.sprite,
                             angle: this.sprite.angle + angle,
-                            ease: 'Power1',
+                            ease: 'Linear',
                             duration: this.worm.speed / 2,
                         });
                     }
@@ -191,12 +191,76 @@ export default class WormPart extends Phaser.GameObjects.Sprite {
         this.sprite.setRotation(180 * (Math.PI / 180));
     }
     setTail(direction = 90) {
-        this.isTail = true;
-        this.sprite.setFrame(2);
-        this.sprite.setRotation(direction * (Math.PI / 180));
-    }
-    unsetTail() {
-        this.isTail = false;
-        this.sprite.setFrame(0);
+            this.isTail = true;
+            this.sprite.setFrame(2);
+            this.sprite.setRotation(direction * (Math.PI / 180));
+        }
+        // unsetTail() {
+        //     this.isTail = false;
+        //     this.sprite.setFrame(0);
+        // }
+
+    refreshDirection() {
+        // TODO :: FUNCTION REFRESH DIRECTION IN WORMPART
+        // Compute if top / bottom / left /right side of map and angle tail properly
+
+        // Directions head/tail
+        // 0 - east | 90 - down 
+        // 180 - west | 270 - north
+
+        // TODO :: END OF PATH CASE !!!!!!
+        const nextTile = this.scene.path[this.currentTile.pathInd + 1];
+        let angle = 0;
+        if (nextTile.indX < this.scene.map.length / 2) {
+            if (nextTile.indY < this.scene.map[0].length / 2) {
+                console.log("top left ", nextTile.indX, nextTile.indY, nextTile.direction);
+                if (nextTile.direction === 3)
+                    angle = 0;
+                if (nextTile.direction === 1)
+                    angle = 270;
+                if (nextTile.direction === 5)
+                    angle = 0;
+                if (nextTile.direction === 0)
+                    angle = 270;
+            } else {
+                console.log("bottom left ", nextTile.indX, nextTile.indY, nextTile.direction);
+            }
+        } else {
+            if (nextTile.indY < this.scene.map[0].length / 2) {
+                console.log("top right ", nextTile.indX, nextTile.indY, nextTile.direction);
+                if (nextTile.direction === 3)
+                    angle = 0;
+                if (nextTile.direction === 1)
+                    angle = 270;
+                if (nextTile.direction === 5)
+                    angle = 0;
+                if (nextTile.direction === 2)
+                    angle = 90;
+                if (nextTile.direction === 0)
+                    angle = 90;
+            } else {
+                console.log("bottom right ", nextTile.indX, nextTile.indY, nextTile.direction);
+            }
+        }
+        this.sprite.angle = angle;
+
+
+        // let angle = 0;
+        // if (this.current.direction === 1) {
+        //     if (t.indY === this.currentTile.indY)
+        //         angle = ;
+        //     else
+        //         angle = 90;
+        // }
+        // if (t.direction === 2 || t.direction === 4)
+        //     angle = -90;
+        // if (t.direction === 5) {
+        //     if (t.indX === this.currentTile.indX)
+        //         angle = 90;
+        //     else
+        //         angle = -90;
+        // }
+        // this.bodyPartList[this.bodyPartList.length - 1].sprite.angle = angle;
+
     }
 }

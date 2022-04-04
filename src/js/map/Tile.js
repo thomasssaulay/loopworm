@@ -183,7 +183,7 @@ export default class Tile extends Phaser.GameObjects.Sprite {
     }
     setTypeland() {
         this.type = "land";
-        this.direction = null;
+        this.direction = 0;
         this.sprite.setTexture(this.type, Phaser.Math.Between(0, 2));
         const r = Math.random();
         if (r < 0.16) {

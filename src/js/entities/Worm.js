@@ -62,20 +62,24 @@ export default class Worm extends Phaser.GameObjects.Sprite {
 
     incSize() {
         const newTileInd = this.bodyPartList[this.bodyPartList.length - 1].currentTile.pathInd - 1;
-        this.bodyPartList[this.bodyPartList.length - 1].unsetTail();
+        this.bodyPartList.splice(this.bodyPartList.length - 1, 0, new WormPart(this.scene, this, newTileInd));
+        this.bodyPartList[this.bodyPartList.length - 2].sprite.x = this.bodyPartList[this.bodyPartList.length - 3].sprite.x;
+        this.bodyPartList[this.bodyPartList.length - 2].sprite.y = this.bodyPartList[this.bodyPartList.length - 3].sprite.y;
+
         this.bodySize++;
-        this.bodyPartList.push(new WormPart(this.scene, this, newTileInd));
-        this.bodyPartList[this.bodyPartList.length - 1].x = this.bodyPartList[this.bodyPartList.length - 2].x;
-        this.bodyPartList[this.bodyPartList.length - 1].y = this.bodyPartList[this.bodyPartList.length - 2].y;
-        this.bodyPartList[this.bodyPartList.length - 1].setTail(this.bodyPartList[this.bodyPartList.length - 2].direction);
         this.speed += 20;
+        console.log(this.bodyPartList);
     }
     decSize() {
-        // const newInd = this.bodyPartList[this.bodySize - 1].currentTile.pathInd - 1;
-        this.bodyPartList[this.bodyPartList.length - 1].sprite.destroy();
-        this.bodyPartList.pop();
-        this.bodySize--;
-        this.speed -= 20;
+        // this.bodyPartList[this.bodyPartList.length - 2].sprite.destroy();
+        // this.bodyPartList.splice(this.bodyPartList.length - 2, 1);
+        // this.bodyPartList[this.bodyPartList.length - 1].currentTile = this.bodyPartList[this.bodyPartList.length - 2].currentTile;
+
+        this.bodyPartList[this.bodyPartList.length - 1].refreshDirection();
+
+        // this.bodySize--;
+        // this.speed -= 20;
+        // console.log(this.bodyPartList);
     }
 
 }
