@@ -18,7 +18,6 @@ export default class HudScene extends Phaser.Scene {
         this.sceneMain.events.on("updateHud", this.updateHud, this);
     }
 
-
     initHudScene() {
         //  UI
         this.HUDTitle = this.add
@@ -158,7 +157,7 @@ export default class HudScene extends Phaser.Scene {
             cardName
         );
         this.HUDCards.push(newCard);
-        this.updateCards();
+        this.HUDCards[this.HUDCards.length - 1].hide();
     }
 
     showCardInfo(card) {
@@ -177,29 +176,39 @@ export default class HudScene extends Phaser.Scene {
         }
     }
     hideCardInfo() {
-            if (this.cardInfoAnim) {
-                this.sceneMain.tweens.add({
-                    targets: [this.HUDCardInfoBack, this.HUDCardInfoText],
-                    y: "+=128",
-                    ease: "Bounce",
-                    duration: 500,
-                    onCompleteScope: this,
-                    onComplete: function() {
-                        this.cardInfoAnim = false;
-                    }
-                });
-            }
+        if (this.cardInfoAnim) {
+            this.sceneMain.tweens.add({
+                targets: [this.HUDCardInfoBack, this.HUDCardInfoText],
+                y: "+=128",
+                ease: "Bounce",
+                duration: 500,
+                onCompleteScope: this,
+                onComplete: function() {
+                    this.cardInfoAnim = false;
+                }
+            });
         }
-        // disableCards() {
-        //     this.HUDCards.forEach((c) => {
-        //         c.disable();
-        //     });
-        // }
-        // enableCards() {
-        //     this.HUDCards.forEach((c) => {
-        //         c.enable();
-        //     });
-        // }
+    }
+    disableAllCards() {
+        this.HUDCards.forEach((c) => {
+            c.disable();
+        });
+    }
+    enableAllCards() {
+        this.HUDCards.forEach((c) => {
+            c.enable();
+        });
+    }
+    scaleUpDownAnim(target) {
+        this.tweens.add({
+            targets: target,
+            scale: 1.3,
+            yoyo: true,
+            repeat: 2,
+            ease: "Power2",
+            duration: 100
+        });
+    }
     onQuitGame() {
         this.hud = this.sceneMain.scene.stop("Hud");
         this.sceneMain.scene.start("SceneMainMenu");

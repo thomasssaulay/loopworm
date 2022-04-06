@@ -1,4 +1,5 @@
 import * as Globals from "../Globals";
+import LoadingBar from "../hud/LoadingBar";
 
 export default class Card {
     constructor(scene, x, y, name) {
@@ -7,7 +8,9 @@ export default class Card {
         this.y = y;
         this.name = name;
         this.data = Globals.CARDS[name];
+        this.isShown = true;
         this.isEnabled = false;
+        this.cooldown = this.data.cooldown;
 
         this.shakeAnim = this.scene.tweens.add({
             targets: [this.sprite, this.cardSprite, this.priceText, this.text],
@@ -21,32 +24,18 @@ export default class Card {
             })
             .setOrigin(0.5, 0.5);
         this.sprite = this.scene.add
-            .sprite(x, y + 25, "orb", 0)
+            .sprite(x, this.scene.height + 8, "orb", 0)
             .setInteractive();
-        this.cardSprite = this.scene.add.sprite(x, y + 30, "card", 0);
+        this.cardSprite = this.scene.add.sprite(x, this.scene.height + 8, "card", 0);
         this.priceText = this.scene.add
-            .text(x, y + 55, this.data.price + "", {
+            .text(x, this.scene.height + 8 - 32, this.data.price + "", {
                 font: "18pt pearsoda",
                 color: Globals.PALETTE_HEX[1]
             })
             .setOrigin(0.5, 0.5);
-    }
 
-    moveToX(x) {
-        this.x = x;
-
-        this.scene.tweens.add({
-            targets: [this.sprite, this.priceText, this.text],
-            x: x,
-            ease: "Power2",
-            duration: 700
-        });
-        this.scene.tweens.add({
-            targets: this.cardSprite,
-            x: x - 2,
-            ease: "Power2",
-            duration: 700
-        });
+        this.bar = new LoadingBar(this, x, y - 64, this.cooldown,this.cooldown);
+        this.barTimer = null;
     }
 
     refresh() {
@@ -74,56 +63,72 @@ export default class Card {
     }
 
     hide() {
-        this.scene.tweens.add({
-            targets: [this.sprite, this.cardSprite],
-            y: this.scene.height + 8,
-            ease: "Bounce",
-            duration: 1000,
-            onCompleteScope: this,
-            onComplete: function() {}
-        });
-        this.scene.tweens.add({
-            targets: this.priceText,
-            y: this.scene.height + 8 - 32,
-            ease: "Bounce",
-            duration: 1000,
-            onCompleteScope: this,
-            onComplete: function() {}
-        });
-        this.scene.tweens.add({
-            targets: this.text,
-            y: this.scene.height + 8 + 32,
-            ease: "Bounce",
-            duration: 1000,
-            onCompleteScope: this,
-            onComplete: function() {}
-        });
+        if(this.isShown) {
+            this.scene.tweens.add({
+                targets: [this.sprite, this.cardSprite],
+                y: this.scene.height + 8,
+                ease: "Bounce",
+                duration: 1000,
+            });
+            this.scene.tweens.add({
+                targets: this.priceText,
+                y: this.scene.height + 8 - 32,
+                ease: "Bounce",
+                duration: 1000,
+            });
+            this.scene.tweens.add({
+                targets: this.text,
+                y: this.scene.height + 8 + 32,
+                ease: "Bounce",
+                duration: 1000,
+            });
+            this.scene.tweens.add({
+                targets: [this.bar.bg, this.bar.bar],
+                y: -58,
+                ease: "Bounce",
+                duration: 1000,
+            });
+
+            console.log("Hiding " + this.name)
+            this.isShown = false;
+        }
     }
     show() {
-        this.scene.tweens.add({
-            targets: [this.sprite, this.cardSprite],
-            y: this.scene.height - 64,
-            ease: "Bounce",
-            duration: 1000,
-            onCompleteScope: this,
-            onComplete: function() {}
-        });
-        this.scene.tweens.add({
-            targets: this.priceText,
-            y: this.scene.height - 64 - 32,
-            ease: "Bounce",
-            duration: 1000,
-            onCompleteScope: this,
-            onComplete: function() {}
-        });
-        this.scene.tweens.add({
-            targets: this.text,
-            y: this.scene.height - 64 + 32,
-            ease: "Bounce",
-            duration: 1000,
-            onCompleteScope: this,
-            onComplete: function() {}
-        });
+        if(!this.isShown) {
+            this.scene.tweens.add({
+                targets: this.sprite,
+                y: this.scene.height - 56,
+                ease: "Bounce",
+                duration: 1000,
+            });
+            this.scene.tweens.add({
+                targets: this.cardSprite,
+                y: this.scene.height - 64,
+                ease: "Bounce",
+                duration: 1000,
+            });
+            this.scene.tweens.add({
+                targets: this.priceText,
+                y: this.scene.height - 64 - 32,
+                ease: "Bounce",
+                duration: 1000,
+            });
+            this.scene.tweens.add({
+                targets: this.text,
+                y: this.scene.height - 64 + 32,
+                ease: "Bounce",
+                duration: 1000,
+            });
+            this.scene.tweens.add({
+                targets: [this.bar.bg, this.bar.bar],
+                y: - 128,
+                ease: "Bounce",
+                duration: 1000,
+            });
+
+            this.isShown = true;
+            console.log("Showing and start loading " + this.name)
+        }
     }
 
     shake() {
@@ -156,7 +161,7 @@ export default class Card {
         }
     }
     enable() {
-        if (!this.isEnabled) {
+        if(!this.isEnabled) {
             console.log(this.name + " is enabled");
             if (this.cardSprite._events.pointerup === undefined) {
                 this.cardSprite.on(
@@ -169,12 +174,31 @@ export default class Card {
         }
     }
     disable() {
-        if (this.isEnabled) {
+        if(this.isEnabled) {
             console.log(this.name + " is disabled");
             this.cardSprite.off("pointerup");
             this.isEnabled = false;
+            this.bar.set(0);
         }
     }
+    startCooldown() {
+        this.barTimer = this.scene.time.addEvent({
+            delay: this.cooldown / 100,
+            callback: () => {
+                this.bar.setPercent(this.barTimer.getOverallProgress())
+                if(this.barTimer.getOverallProgress() === 1) {
+                    console.warn("FIN TIMER DE " + this.name)
+                }
+            },
+            callbackScope: this,
+            repeat: 100
+        });
+    }
+    stopCooldown() {
+        this.scene.time.removeEvent(this.barTimer);
+        // this.barTimer = null;
+    }
+
     remove() {
         this.sprite.destroy();
         this.cardSprite.destroy();

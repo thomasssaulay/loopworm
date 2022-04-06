@@ -15,12 +15,14 @@ export const CARDS = {
         name: "Orb",
         cardType: "path",
         price: 2,
+        cooldown: 1000,
         info: "Salut ca gaz"
     },
     "Card_Orb_Dispenser": {
         name: "Orb\nDispenser",
         cardType: "coastal",
         price: 6,
+        cooldown: 5000,
         info: "Salut ca gaz du cul"
     }
 }

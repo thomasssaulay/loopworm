@@ -82,6 +82,7 @@ export default class Worm extends Phaser.GameObjects.Sprite {
         this.speed += 50;
 
         ParticleManager.emitHealParticles(this.scene, this.bodyPartList[0]);
+        this.scene.hud.scaleUpDownAnim(this.scene.hud.HUDWormSize);
         this.scene.emitUpdateHud();
     }
 
@@ -116,7 +117,9 @@ export default class Worm extends Phaser.GameObjects.Sprite {
         }
 
         ParticleManager.emitHurtParticles(this.scene, this.bodyPartList[0]);
+        
         this.scene.shakeCamera(.5);
+        this.scene.hud.scaleUpDownAnim(this.scene.hud.HUDWormSize);
         this.scene.emitUpdateHud();
     }
 

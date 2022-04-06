@@ -2,46 +2,58 @@ import Phaser from "phaser";
 import * as Globals from "../Globals";
 
 export default class LoadingBar {
-    constructor(scene, x, y, value, maxValue) {
-        this.scene = scene;
-        this.x = x;
-        this.y = y;
-        this.value = value;
-        this.maxValue = maxValue;
+    constructor(card, x, y, value, maxValue) {
+        this.card = card;
+        this.scene = card.scene;
 
         this.width = 96;
         this.height = 8;
+
+        this.x = x - this.width / 2;
+        this.y = y - this.height / 2;
+        this.value = value;
+        this.maxValue = maxValue;
 
         this.bg = new Phaser.GameObjects.Graphics(this.scene);
         this.bar = new Phaser.GameObjects.Graphics(this.scene);
 
         this.draw();
-
-        scene.add.existing(this.bg);
-        scene.add.existing(this.bar);
+        
+        this.scene.add.existing(this.bg);
+        this.scene.add.existing(this.bar);
     }
 
-    set(value, maxValue) {
+    set(value, maxValue = this.maxValue) {
         this.value = value;
         this.maxValue = maxValue;
 
         if (this.value < 0) {
             this.value = 0;
         }
+        if (this.value > this.maxValue) {
+            this.value = this.maxValue;
+        }
 
         this.draw();
 
-        // let d = this.value / this.maxValue;
-        // console.log(this.bar)
-        // this.scene.add.tween({
-        //     targets: this.bar,
-        //     duration: 500,
-        //     ease: "Power2",
-        //     width: d * this.width - 4
-        // });
+        return this.value === 0;
+    }
+    
+    setPercent(percent) {
+        this.value = percent * this.maxValue;
+
+        if (this.value < 0) {
+            this.value = 0;
+        }
+        if (this.value > this.maxValue) {
+            this.value = this.maxValue;
+        }
+
+        this.draw();
 
         return this.value === 0;
     }
+
 
     draw() {
         this.bar.clear();

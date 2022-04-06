@@ -3,7 +3,6 @@ import * as MapManager from "../map/MapManager"
 import * as EntityManager from "../entities/EntityManager"
 import * as Globals from "../Globals"
 import Worm from "../entities/Worm";
-import LoadingBar from "../hud/LoadingBar";
 
 export default class SceneMain extends Phaser.Scene {
     constructor() {
@@ -68,12 +67,12 @@ export default class SceneMain extends Phaser.Scene {
 
         this.buildMode = false;
 
-        // Load main font
-        new FontFace("PearSoda", "url(./src/assets/fonts/PearSoda.ttf)").load().then(function(loaded) {
-            document.fonts.add(loaded);
-        }).catch(function(error) {
-            return error;
-        });
+        // Load main font -- useless now
+        // new FontFace("PearSoda", "url(./src/assets/fonts/PearSoda.ttf)").load().then(function(loaded) {
+        //     document.fonts.add(loaded);
+        // }).catch(function(error) {
+        //     return error;
+        // });
 
         // Draw the map, then draw a procedurally generated path 
         this.mapConfig = { x: 20, y: 12, border: 2 };
@@ -81,6 +80,10 @@ export default class SceneMain extends Phaser.Scene {
         this.path = MapManager.drawPath(this.map, this.mapConfig.border);
 
         // TODO :: COMPUTE AVAILABLE PATH
+        // 
+        // 
+        // 
+        //         
         this.availablePath = this.path;
 
 
@@ -89,28 +92,27 @@ export default class SceneMain extends Phaser.Scene {
         this.spikes = [];
 
         this.worm = new Worm(this, this.path[0]);
-        // this.worm.moveOnPath(this.path);
         this.worm.moveToNextTile();
 
         EntityManager.spawnSpike(this, this.path[9]);
         EntityManager.spawnOrb(this, this.path[11]);
 
-        // this.bar = new LoadingBar(this, 96, 48, 80, 100);
-
         // Initialize HUD scene
+        // Re-run it if already loaded in a previous run
         this.hud = this.scene.get("Hud");
         if (!this.hud.scene.isActive())
             this.scene.run("Hud");
-
         this.hud.initHudScene();
 
         // Keyboard and mouse inputs handler
         this.handleInputs();
 
         // First update of the hud
+        // this.time.delayedCall(1000, () => this.emitUpdateHud(), [], this);
         this.emitUpdateHud();
     }
 
+    
     update(time, delta) {}
 
     handleInputs() {
@@ -122,19 +124,23 @@ export default class SceneMain extends Phaser.Scene {
                 this.worm.incSize();
             }
             if (event.code === "ArrowUp") {
-                EntityManager.spawnSpikeAtRandom(this);
+                // EntityManager.spawnSpikeAtRandom(this);
+                this.hud.HUDCards[0].startCooldown();
             }
             if (event.code === "ArrowDown") {
-                EntityManager.spawnOrbAtRandom(this);
+                // EntityManager.spawnOrbAtRandom(this);
+                this.hud.HUDCards[0].stopCooldown();
             }
         });
     }
 
     emitUpdateHud() {
+        // Update HUD event
         this.events.emit("updateHud");
     }
 
     clearContour() {
+        // Clears the tile contouring on mouseUp
         this.map.forEach((t) => {
             t.forEach((tc) => {
                 tc.contour.clear();
@@ -142,7 +148,8 @@ export default class SceneMain extends Phaser.Scene {
         });
     }
 
-    shakeCamera(intensity) {
-        this.cameras.main.shake(250, intensity / 100);
+    shakeCamera(intensity, time = 250) {
+        // Camera shake effect
+        this.cameras.main.shake(time, intensity / 100);
     }
 }

@@ -8,6 +8,10 @@
     <title>LOOPWORM --- WIP</title>
 
     <style>
+        @font-face {
+            font-family: "PearSoda";
+            src: url("./src/assets/fonts/PearSoda.ttf") format("truetype");
+        }
         html,
         body,
         #game-container {
@@ -22,6 +26,14 @@
             align-items: center;
             justify-content: center;
         }
+
+        .load-font {
+            font-family: "PearSoda";
+            position: absolute;
+            top: -100px;
+            left: -100px;
+            visibility: hidden;
+        }
         
         #game-container>canvas {
             border-radius: 15px;
@@ -30,6 +42,7 @@
 </head>
 
 <body>
+    <div class="load-font">.</div>
     <div id="game-container"></div>
 </body>
 
