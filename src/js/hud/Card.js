@@ -7,6 +7,7 @@ export default class Card {
         this.y = y;
         this.name = name;
         this.data = Globals.CARDS[name];
+        this.isEnabled = false;
 
         this.shakeAnim = this.scene.tweens.add({
             targets: [this.sprite, this.cardSprite, this.priceText, this.text],
@@ -79,9 +80,7 @@ export default class Card {
             ease: "Bounce",
             duration: 1000,
             onCompleteScope: this,
-            onComplete: function() {
-                this.enable();
-            }
+            onComplete: function() {}
         });
         this.scene.tweens.add({
             targets: this.priceText,
@@ -107,9 +106,7 @@ export default class Card {
             ease: "Bounce",
             duration: 1000,
             onCompleteScope: this,
-            onComplete: function() {
-                this.enable();
-            }
+            onComplete: function() {}
         });
         this.scene.tweens.add({
             targets: this.priceText,
@@ -159,16 +156,24 @@ export default class Card {
         }
     }
     enable() {
-        if (this.cardSprite._events.pointerup === undefined) {
-            this.cardSprite.on(
-                "pointerup",
-                () => this.scene.onToggleBuild(this),
-                this.scene
-            );
+        if (!this.isEnabled) {
+            console.log(this.name + " is enabled");
+            if (this.cardSprite._events.pointerup === undefined) {
+                this.cardSprite.on(
+                    "pointerup",
+                    () => this.scene.onToggleBuild(this),
+                    this.scene
+                );
+            }
+            this.isEnabled = true;
         }
     }
     disable() {
-        this.cardSprite.off("pointerup");
+        if (this.isEnabled) {
+            console.log(this.name + " is disabled");
+            this.cardSprite.off("pointerup");
+            this.isEnabled = false;
+        }
     }
     remove() {
         this.sprite.destroy();

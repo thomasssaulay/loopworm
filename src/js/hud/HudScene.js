@@ -107,34 +107,35 @@ export default class HudScene extends Phaser.Scene {
             } else {
                 c.enable();
                 c.show();
-
             }
         });
     }
 
     onToggleBuild(card) {
-        const build = Globals.CARDS[card.name];
+        if (card.isEnabled) {
+            const build = Globals.CARDS[card.name];
 
-        if (this.sceneMain.buildMode === false) {
-            //     if (
-            //         this.sceneMain.player[this.sceneMain.currentPlayer].money >= card.price
-            //     ) {
-            //         // IF ENOUGH MONEY
-            //         this.toggleDiceOff();
-            this.sceneMain.buildMode = card;
-            card.setActive(true);
-            this.input.setDefaultCursor("crosshair");
-            this.showCardInfo(card);
-            //         if (building.coastal) this.sceneMain.showCoastal();
-            //     } else {
-            //         card.shake();
-            // }
-        } else {
-            //     this.toggleDiceOn();
-            this.hideCardInfo();
-            this.toggleBuildOff();
-            card.setActive(false);
-            //     this.sceneMain.hideCoastal();
+            if (this.sceneMain.buildMode === false) {
+                //     if (
+                //         this.sceneMain.player[this.sceneMain.currentPlayer].money >= card.price
+                //     ) {
+                //         // IF ENOUGH MONEY
+                //         this.toggleDiceOff();
+                this.sceneMain.buildMode = card;
+                card.setActive(true);
+                this.input.setDefaultCursor("crosshair");
+                this.showCardInfo(card);
+                //         if (building.coastal) this.sceneMain.showCoastal();
+                //     } else {
+                //         card.shake();
+                // }
+            } else {
+                //     this.toggleDiceOn();
+                this.hideCardInfo();
+                this.toggleBuildOff();
+                card.setActive(false);
+                //     this.sceneMain.hideCoastal();
+            }
         }
     }
     toggleBuildOff() {
@@ -148,16 +149,18 @@ export default class HudScene extends Phaser.Scene {
     }
 
     addCard(cardName) {
-        const offset_x = 80;
+        const offset_x = 128;
+        const offset_gap = 96;
         const newCard = new Card(
             this,
-            offset_x + offset_x * this.HUDCards.length,
+            offset_x + offset_gap * this.HUDCards.length,
             this.height + 64,
             cardName
         );
         this.HUDCards.push(newCard);
         this.updateCards();
     }
+
     showCardInfo(card) {
         if (!this.cardInfoAnim) {
             this.sceneMain.tweens.add({
@@ -174,29 +177,29 @@ export default class HudScene extends Phaser.Scene {
         }
     }
     hideCardInfo() {
-        if (this.cardInfoAnim) {
-            this.sceneMain.tweens.add({
-                targets: [this.HUDCardInfoBack, this.HUDCardInfoText],
-                y: "+=128",
-                ease: "Bounce",
-                duration: 500,
-                onCompleteScope: this,
-                onComplete: function() {
-                    this.cardInfoAnim = false;
-                }
-            });
+            if (this.cardInfoAnim) {
+                this.sceneMain.tweens.add({
+                    targets: [this.HUDCardInfoBack, this.HUDCardInfoText],
+                    y: "+=128",
+                    ease: "Bounce",
+                    duration: 500,
+                    onCompleteScope: this,
+                    onComplete: function() {
+                        this.cardInfoAnim = false;
+                    }
+                });
+            }
         }
-    }
-    disableCards() {
-        this.HUDCards.forEach((c) => {
-            c.disable();
-        });
-    }
-    enableCards() {
-        this.HUDCards.forEach((c) => {
-            c.enable();
-        });
-    }
+        // disableCards() {
+        //     this.HUDCards.forEach((c) => {
+        //         c.disable();
+        //     });
+        // }
+        // enableCards() {
+        //     this.HUDCards.forEach((c) => {
+        //         c.enable();
+        //     });
+        // }
     onQuitGame() {
         this.hud = this.sceneMain.scene.stop("Hud");
         this.sceneMain.scene.start("SceneMainMenu");
