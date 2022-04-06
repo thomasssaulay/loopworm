@@ -9,6 +9,7 @@ import SceneMainMenu from "./js/scenes/SceneMainMenu";
 import SceneMain from "./js/scenes/SceneMain";
 
 import * as Globals from "./js/Globals";
+import HudScene from './js/hud/HudScene';
 
 const config = {
     type: Phaser.AUTO,
@@ -17,7 +18,7 @@ const config = {
     width: 800,
     height: 600,
     // zoom: 2,
-    scene: [SceneMainMenu, SceneMain, SceneGameOver]
+    scene: [SceneMainMenu, SceneMain, SceneGameOver, HudScene]
 };
 
 const game = new Phaser.Game(config);

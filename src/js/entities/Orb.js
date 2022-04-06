@@ -6,7 +6,7 @@ export default class Orb extends Entity {
         super(scene, tile);
 
         this.name = "Orb";
-        this.sprite = this.scene.add.sprite(this.x, this.y, "orb", 0).setTint(Globals.PALETTE[1]);
+        this.sprite = this.scene.add.sprite(this.x, this.y, "orb", 0);
         this.sprite.anims.create({
             key: "idle",
             frames: this.anims.generateFrameNames("orb", {

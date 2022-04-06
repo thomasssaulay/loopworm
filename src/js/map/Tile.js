@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import * as ParticleManager from "../particles/ParticleManager";
+import * as EntityManager from "../entities/EntityManager";
 import * as Globals from "../Globals";
 
 const neighboors = [
@@ -32,6 +33,7 @@ export default class Tile extends Phaser.GameObjects.Sprite {
         this.pathInd = null;
         this.type = type;
         this.direction = 0;
+        this.orientation = 0;
         this.contains = [];
         this.spawns = null;
         this.isSpawner = false;
@@ -94,31 +96,38 @@ export default class Tile extends Phaser.GameObjects.Sprite {
         // }
 
         // // BUILD OPTIONS
-        // if (this.scene.buildMode !== false) {
-        //     if (this.scene.buildMode.eraser) {
-        //         if (this.type === "path") {
-        //             this.scene.buildMode.remove();
-        //             ParticleManager.emitFogParticle(
-        //                 this.scene,
-        //                 this,
-        //                 this.scene.player[this.scene.currentPlayer].color
-        //             );
-        //             this.eraseMobs();
-        //             this.scene.hud.hideCardInfo();
-        //             this.scene.hud.toggleBuildOff();
-        //             this.scene.hud.toggleDiceOn();
-        //             this.scene.emitUpdateHud();
-        //         }
-        //     } else {
-        //         if (this.type === "land") {
-        //             if (this.scene.buildMode.coastal) {
-        //                 if (this.isCoastal) this.setTypeBuilding(this.scene.buildMode);
-        //             } else {
-        //                 this.setTypeBuilding(this.scene.buildMode);
-        //             }
-        //         }
-        //     }
-        // }
+        if (this.scene.buildMode !== false) {
+            //     if (this.scene.buildMode.eraser) {
+            if (this.type === "path") {
+                if (this.scene.buildMode.data.cardType === "path" && this.contains.length === 0) {
+                    EntityManager.spawnOrb(this.scene, this.scene.path[this.pathInd]);
+                }
+
+
+                // this.scene.buildMode.remove();
+                //             ParticleManager.emitFogParticle(
+                //                 this.scene,
+                //                 this,
+                //                 this.scene.player[this.scene.currentPlayer].color
+                //             );
+                //             this.eraseMobs();
+                this.scene.buildMode.setActive(false);
+                this.scene.hud.hideCardInfo();
+                this.scene.hud.toggleBuildOff();
+
+                //             this.scene.hud.toggleDiceOn();
+                // this.scene.emitUpdateHud();
+            }
+            //     } else {
+            //         if (this.type === "land") {
+            //             if (this.scene.buildMode.coastal) {
+            //                 if (this.isCoastal) this.setTypeBuilding(this.scene.buildMode);
+            //             } else {
+            //                 this.setTypeBuilding(this.scene.buildMode);
+            //             }
+            //         }
+            //     }
+        }
 
         // // SHOW BUILD INFO
         // if (this.type === "building") {
@@ -157,9 +166,13 @@ export default class Tile extends Phaser.GameObjects.Sprite {
         //     }
         // }
 
+        console.warn("========= TILE =========")
         console.warn("direction", this.direction)
+        console.warn("orientation", this.orientation)
+        console.warn("pathInd", this.pathInd)
         console.warn("indX indY", this.indX, this.indY)
         console.warn("contains", this.contains)
+        console.warn("=========================")
 
         this.contour.clear();
     }

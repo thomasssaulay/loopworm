@@ -39,12 +39,14 @@ export function drawPath(map, border) {
     let cursor = { x: radius.x, y: border };
     path.push(map[cursor.x][cursor.y]);
     path[path.length - 1].direction = 2;
+    path[path.length - 1].orientation = 0;
     // adding tiles to path
     // NE to NW
     while (cursor.x > border) {
         cursor.x -= 1;
         path.push(map[cursor.x][cursor.y]);
         path[path.length - 1].direction = 3;
+        path[path.length - 1].orientation = 0;
         if (
             Math.random() < deviationChance &&
             cursor.x > border + smoothCorners &&
@@ -53,18 +55,23 @@ export function drawPath(map, border) {
         ) {
             cursor.y += 1;
             path[path.length - 1].direction = 1;
+            path[path.length - 1].orientation = 270;
             path.push(map[cursor.x][cursor.y]);
             path[path.length - 1].direction = 5;
+            path[path.length - 1].orientation = 0;
             deviations++;
         }
     }
     deviations = 0;
     path[path.length - 1].direction = 1;
+    path[path.length - 1].orientation = 270;
 
     // NW to SW
     while (cursor.y < radius.y) {
         cursor.y += 1;
         path.push(map[cursor.x][cursor.y]);
+        path[path.length - 1].direction = 0;
+        path[path.length - 1].orientation = 270;
         if (
             Math.random() < deviationChance &&
             cursor.y < radius.y - smoothCorners &&
@@ -78,12 +85,14 @@ export function drawPath(map, border) {
     }
     deviations = 0;
     path[path.length - 1].direction = 4;
+    path[path.length - 1].orientation = 180;
 
     // SW to SE
     while (cursor.x < radius.x) {
         cursor.x += 1;
         path.push(map[cursor.x][cursor.y]);
         path[path.length - 1].direction = 3;
+        path[path.length - 1].orientation = 180;
         if (
             Math.random() < deviationChance &&
             cursor.x < radius.x - smoothCorners &&
@@ -92,18 +101,23 @@ export function drawPath(map, border) {
         ) {
             cursor.y -= 1;
             path[path.length - 1].direction = 5;
+            path[path.length - 1].orientation = 90;
             path.push(map[cursor.x][cursor.y]);
             path[path.length - 1].direction = 1;
+            path[path.length - 1].orientation = 180;
             deviations++;
         }
     }
     deviations = 0;
     path[path.length - 1].direction = 5;
+    path[path.length - 1].orientation = 90;
 
     // SE to NE
     while (cursor.y > border) {
         cursor.y -= 1;
         path.push(map[cursor.x][cursor.y]);
+        path[path.length - 1].direction = 0;
+        path[path.length - 1].orientation = 90;
         if (
             Math.random() < deviationChance &&
             cursor.y > border + smoothCorners &&
@@ -130,6 +144,10 @@ export function drawPath(map, border) {
 
     // remove extra overlapping tile
     path.pop();
+
+    // fix first tile
+    path[0].direction = 2;
+    path[0].orientation = 0;
 
     // DRAW FINAL PATH
     path.forEach((tile, i) => {

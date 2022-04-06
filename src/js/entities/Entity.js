@@ -26,7 +26,7 @@ export default class Entity extends Phaser.GameObjects.Sprite {
     }
 
     onCollide() {
-        console.log("Collide with " + this.name);
+        console.log("ON COLLIDE NOT SET :: Collide with " + this.name);
     }
 
     destroy() {
