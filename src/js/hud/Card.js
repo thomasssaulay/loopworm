@@ -19,31 +19,41 @@ export default class Card {
 
         this.text = this.scene.add
             .text(x, y, this.data.name, {
-                font: "13pt pearsoda",
+                font: "13pt PearSoda",
                 color: Globals.PALETTE_HEX[1]
             })
             .setOrigin(0.5, 0.5);
         this.sprite = this.scene.add
-            .sprite(x, this.scene.height + 8, "orb", 0)
+            .sprite(x, this.scene.height + 8, "builds", this.data.offsetSprite * 3)
             .setInteractive();
-        this.cardSprite = this.scene.add.sprite(x, this.scene.height + 8, "card", 0);
+
+        this.cardSprite = this.scene.add.sprite(x, this.scene.height + 8, "card", 0).setInteractive();
+        this.cardSprite.on(
+            "pointerup",
+            () => this.scene.onToggleBuild(this),
+            this.scene
+        );
         this.priceText = this.scene.add
             .text(x, this.scene.height + 8 - 32, this.data.price + "", {
-                font: "18pt pearsoda",
+                font: "18pt PearSoda",
                 color: Globals.PALETTE_HEX[1]
             })
             .setOrigin(0.5, 0.5);
 
-        this.bar = new LoadingBar(this, x, y - 64, this.cooldown,this.cooldown);
+        this.bar = new LoadingBar(this.scene, x, y - 64, 0, this.cooldown);
+        this.bar.bar.setAlpha(0);
+        this.bar.bg.setAlpha(0);
         this.barTimer = null;
+
+        this.disable();
     }
 
     refresh() {
         this.sprite.anims.create({
             key: "idle",
-            frames: this.sprite.anims.generateFrameNames("orb", {
-                start: 0,
-                end: 2
+            frames: this.sprite.anims.generateFrameNames("builds", {
+                start: this.data.offsetSprite * 3,
+                end: this.data.offsetSprite * 3 + 2
             }),
             frameRate: 6,
             repeat: -1
@@ -63,7 +73,7 @@ export default class Card {
     }
 
     hide() {
-        if(this.isShown) {
+        if (this.isShown) {
             this.scene.tweens.add({
                 targets: [this.sprite, this.cardSprite],
                 y: this.scene.height + 8,
@@ -85,16 +95,18 @@ export default class Card {
             this.scene.tweens.add({
                 targets: [this.bar.bg, this.bar.bar],
                 y: -58,
-                ease: "Bounce",
-                duration: 1000,
+                alpha: 0,
+                ease: "Linear",
+                duration: 750,
             });
 
-            console.log("Hiding " + this.name)
+            this.stopCooldown();
             this.isShown = false;
+            this.disable();
         }
     }
     show() {
-        if(!this.isShown) {
+        if (!this.isShown) {
             this.scene.tweens.add({
                 targets: this.sprite,
                 y: this.scene.height - 56,
@@ -121,13 +133,14 @@ export default class Card {
             });
             this.scene.tweens.add({
                 targets: [this.bar.bg, this.bar.bar],
-                y: - 128,
-                ease: "Bounce",
-                duration: 1000,
+                y: -128,
+                alpha: 1,
+                ease: "Linear",
+                duration: 750,
             });
 
             this.isShown = true;
-            console.log("Showing and start loading " + this.name)
+            this.startCooldown();
         }
     }
 
@@ -147,38 +160,37 @@ export default class Card {
         if (bool) {
             this.scene.tweens.add({
                 targets: [this.sprite, this.cardSprite, this.priceText, this.text],
-                scale: "+=0.1",
+                scale: 1.1,
                 ease: "Power2",
                 duration: 60
             });
         } else {
             this.scene.tweens.add({
                 targets: [this.sprite, this.cardSprite, this.priceText, this.text],
-                scale: "-=0.1",
+                scale: 1,
                 ease: "Power2",
                 duration: 60
             });
         }
     }
     enable() {
-        if(!this.isEnabled) {
-            console.log(this.name + " is enabled");
-            if (this.cardSprite._events.pointerup === undefined) {
-                this.cardSprite.on(
-                    "pointerup",
-                    () => this.scene.onToggleBuild(this),
-                    this.scene
-                );
-            }
+        if (!this.isEnabled) {
+            // console.log(this.name + " is enabled");
+            // if (this.cardSprite._events.pointerup === undefined) {
+            // }
             this.isEnabled = true;
         }
     }
     disable() {
-        if(this.isEnabled) {
-            console.log(this.name + " is disabled");
-            this.cardSprite.off("pointerup");
+        if (this.isEnabled) {
+            // console.log(this.name + " is disabled");
+            this.setActive(false);
+            // this.cardSprite.off("pointerup");
             this.isEnabled = false;
             this.bar.set(0);
+            if (this.isShown) {
+                this.startCooldown();
+            }
         }
     }
     startCooldown() {
@@ -186,9 +198,9 @@ export default class Card {
             delay: this.cooldown / 100,
             callback: () => {
                 this.bar.setPercent(this.barTimer.getOverallProgress())
-                if(this.barTimer.getOverallProgress() === 1) {
-                    console.warn("FIN TIMER DE " + this.name)
-                }
+                if (this.barTimer.getOverallProgress() === 1)
+                    this.enable();
+
             },
             callbackScope: this,
             repeat: 100
@@ -196,7 +208,6 @@ export default class Card {
     }
     stopCooldown() {
         this.scene.time.removeEvent(this.barTimer);
-        // this.barTimer = null;
     }
 
     remove() {

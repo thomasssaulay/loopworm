@@ -2,12 +2,11 @@ import Phaser from "phaser";
 import * as Globals from "../Globals";
 
 export default class LoadingBar {
-    constructor(card, x, y, value, maxValue) {
-        this.card = card;
-        this.scene = card.scene;
+    constructor(scene, x, y, value, maxValue, width = 64, height = 8) {
+        this.scene = scene;
 
-        this.width = 96;
-        this.height = 8;
+        this.width = width;
+        this.height = height;
 
         this.x = x - this.width / 2;
         this.y = y - this.height / 2;
@@ -18,7 +17,7 @@ export default class LoadingBar {
         this.bar = new Phaser.GameObjects.Graphics(this.scene);
 
         this.draw();
-        
+
         this.scene.add.existing(this.bg);
         this.scene.add.existing(this.bar);
     }
@@ -38,7 +37,7 @@ export default class LoadingBar {
 
         return this.value === 0;
     }
-    
+
     setPercent(percent) {
         this.value = percent * this.maxValue;
 

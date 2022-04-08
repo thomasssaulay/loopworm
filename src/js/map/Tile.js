@@ -19,7 +19,6 @@ const neighboors4 = [
     [0, -1],
     [-1, 0]
 ];
-const TILE_COLORS = [0x6b4cb6, 0x201737, 0xc79370, 0x20de8b];
 
 export default class Tile extends Phaser.GameObjects.Sprite {
     constructor(scene, x, y, indX, indY, type = "land") {
@@ -35,9 +34,11 @@ export default class Tile extends Phaser.GameObjects.Sprite {
         this.direction = 0;
         this.orientation = 0;
         this.contains = [];
+        this.containsWorm = false;
         this.spawns = null;
         this.isSpawner = false;
         this.spawnTiles = [];
+        this.spawnTimer = null;
         this.cooldown = 0;
         this.maxCooldown = 0;
         this.direct_dmg = [null, 0];
@@ -47,8 +48,7 @@ export default class Tile extends Phaser.GameObjects.Sprite {
         this.buff_area = 0;
         this.camouflage = false;
         this.isCoastal = false;
-        this.color = 0x101010;
-        this.backgroundColor = 0x101010;
+        this.isObstacle = false;
 
         this.sprite = this.scene.add.sprite(this.x, this.y, "").setDepth(2);
         this.topSprite = null;
@@ -82,55 +82,73 @@ export default class Tile extends Phaser.GameObjects.Sprite {
     }
     onPointerUpHandler() {
         this.scene.clearContour();
-        // let containsString = "";
-        // if (this.contains.length > 0) {
-        //     this.contains.forEach((c) => (containsString += c.name));
-        //     console.log("contains " + containsString);
-        // }
-        // if (this.isSpawner) {
-        //     ParticleManager.emitDamageParticles(
-        //         this.scene,
-        //         this.sprite,
-        //         this.cooldown
-        //     );
-        // }
 
         // // BUILD OPTIONS
-        if (this.scene.buildMode !== false) {
-            //     if (this.scene.buildMode.eraser) {
+        // A card is selected
+        if (this.scene.buildCard !== false) {
+            // Click on 'path' tile
             if (this.type === "path") {
-                if (this.scene.buildMode.data.cardType === "path" && this.contains.length === 0) {
-                    EntityManager.spawnOrb(this.scene, this.scene.path[this.pathInd]);
+                // Card is indeed path type
+                if (this.scene.buildCard.data.cardType === "path" && this.scene.buildCard.name === "Orb" && this.contains.length === 0) {
+                    EntityManager.spawnEntity(this.scene, "orb", this.scene.path[this.pathInd]);
+                    this.scene.buildCard.disable();
+                }
+
+                if (this.scene.buildCard.data.eraser) {
+                    // ERASER
+                    if (this.scene.buildCard.data.eraser) {
+                        this.contains.forEach(el => {
+                            el.destroy();
+                        });
+                        let fogSprite = this.scene.add.sprite(
+                            this.x,
+                            this.y,
+                            "builds",
+                            21
+                        ).setDepth(3);
+                        this.scene.anims.create({
+                            key: "idle",
+                            frames: this.scene.anims.generateFrameNames("builds", {
+                                start: 21,
+                                end: 23
+                            }),
+                            frameRate: 6,
+                            repeat: -1
+                        });
+                        fogSprite.play("idle");
+
+                        ParticleManager.emitHealParticles(this.scene, this);
+                        this.scene.buildCard.disable();
+
+                        this.scene.time.delayedCall(2000, () => { fogSprite.destroy(); }, [], this);
+                    }
                 }
 
 
-                // this.scene.buildMode.remove();
-                //             ParticleManager.emitFogParticle(
-                //                 this.scene,
-                //                 this,
-                //                 this.scene.player[this.scene.currentPlayer].color
-                //             );
-                //             this.eraseMobs();
-                this.scene.buildMode.setActive(false);
+                this.scene.buildCard.setActive(false);
                 this.scene.hud.hideCardInfo();
                 this.scene.hud.toggleBuildOff();
+            } // End of 'path' case
 
-                //             this.scene.hud.toggleDiceOn();
-                // this.scene.emitUpdateHud();
+
+            // Click on 'land' tiles
+            if (this.type === "land") {
+                // If card is 'coastal' type
+                if (this.scene.buildCard.data.cardType === "coastal") {
+                    // If tile is indeed coastal
+                    if (this.isCoastal) {
+                        this.setTypeBuild(this.scene.buildCard);
+                    }
+                }
+                // If card is 'land' type
+                else if (this.scene.buildCard.data.cardType === "land") {
+                    this.setTypeBuild(this.scene.buildCard);
+                }
             }
-            //     } else {
-            //         if (this.type === "land") {
-            //             if (this.scene.buildMode.coastal) {
-            //                 if (this.isCoastal) this.setTypeBuilding(this.scene.buildMode);
-            //             } else {
-            //                 this.setTypeBuilding(this.scene.buildMode);
-            //             }
-            //         }
-            //     }
         }
 
         // // SHOW BUILD INFO
-        // if (this.type === "building") {
+        // if (this.type === "build") {
         //     // show buff area
         //     if (this.buff_area > 0) {
         //         for (let i = -this.buff_area; i <= this.buff_area; i++) {
@@ -166,13 +184,19 @@ export default class Tile extends Phaser.GameObjects.Sprite {
         //     }
         // }
 
-        console.warn("========= TILE =========")
-        console.warn("direction", this.direction)
-        console.warn("orientation", this.orientation)
-        console.warn("pathInd", this.pathInd)
-        console.warn("indX indY", this.indX, this.indY)
-        console.warn("contains", this.contains)
-        console.warn("=========================")
+        if (Globals.DEBUG_TILE_INFO) {
+            console.warn("====== TILE INFO ======")
+            console.warn("type", this.type)
+            console.warn("direction", this.direction)
+            console.warn("orientation", this.orientation)
+            console.warn("pathInd", this.pathInd)
+            console.warn("indX indY", this.indX, this.indY)
+            console.warn("containsWorm", this.containsWorm)
+            console.warn("contains", this.contains)
+            console.warn("spawns", this.spawns)
+            console.warn("spawnTiles", this.spawnTiles)
+            console.warn("=======================")
+        }
 
         this.contour.clear();
     }
@@ -185,7 +209,6 @@ export default class Tile extends Phaser.GameObjects.Sprite {
             this.sprite.anims.currentAnim.destroy();
         }
         this.sprite.setTexture("path", this.direction).clearTint().setDepth(2);
-        this.backgroundColor = TILE_COLORS[0];
         if (this.topSprite !== null) this.topSprite.destroy();
         this.topSprite = null;
     }
@@ -203,24 +226,17 @@ export default class Tile extends Phaser.GameObjects.Sprite {
         if (r < 0.16) {
             let frame = 0;
             if (r < 0.07) {
-                // weed
                 frame = 3;
-                this.color = TILE_COLORS[3];
             }
             if (r >= 0.07 && r < 0.13) {
-                // small weed
                 frame = 6;
-                this.color = TILE_COLORS[3];
             }
             if (r >= 0.13 && r < 0.15) {
-                // rocks
                 frame = 9;
-                this.color = TILE_COLORS[2];
+                this.isObstacle = true;
             }
             if (r >= 0.15 && r < 0.16) {
-                // small rocks
                 frame = 12;
-                this.color = TILE_COLORS[2];
             }
             this.topSprite = this.scene.add.sprite(this.x, this.y, this.type, frame).setDepth(3);
             this.topSprite.anims.create({
@@ -233,17 +249,29 @@ export default class Tile extends Phaser.GameObjects.Sprite {
                 repeat: -1
             });
             this.topSprite.play("idle");
+
         }
+        // Hilighting sprite, only shown when clicking on a corresponding cuild card
+        this.hilightSprite = this.scene.add.sprite(this.x, this.y, "land", 15).setDepth(4).setAlpha(0);
+        this.hilightSprite.anims.create({
+            key: "idle",
+            frames: this.anims.generateFrameNames("land", {
+                start: 15,
+                end: 17
+            }),
+            frameRate: 6,
+            repeat: -1
+        });
+        this.hilightSprite.play("idle");
     }
 
-    // ---
-    setTypeBuilding(card) {
-        this.type = "building";
+    setTypeBuild(card) {
+        this.type = "build";
 
-        // HIDE CARD INFO
+        // Hide card info
         this.scene.hud.hideCardInfo();
 
-        // BUILDING SPRITE
+        // Build sprite
         if (this.topSprite !== null) {
             this.topSprite.destroy();
             this.topSprite = null;
@@ -251,15 +279,14 @@ export default class Tile extends Phaser.GameObjects.Sprite {
         this.topSprite = this.scene.add.sprite(
             this.x,
             this.y,
-            "buildings",
-            card.spriteOffset
-        );
-        this.color = card.owner.color;
+            "builds",
+            card.data.offsetSprite * 3
+        ).setDepth(3);
         this.topSprite.anims.create({
             key: "idle",
-            frames: this.anims.generateFrameNames("buildings", {
-                start: card.spriteOffset,
-                end: card.spriteOffset + 2
+            frames: this.anims.generateFrameNames("builds", {
+                start: card.data.offsetSprite * 3,
+                end: card.data.offsetSprite * 3 + 2
             }),
             frameRate: 6,
             repeat: -1
@@ -269,100 +296,53 @@ export default class Tile extends Phaser.GameObjects.Sprite {
         // EMIT PARTICLES
         ParticleManager.emitBuildarticles(
             this.scene,
-            this,
-            parseInt(this.color, 16)
+            this
         );
 
-        // PAY THE BUILDING
-        card.owner.substractMoney(card.price);
-
         // DIRECT BUFF
-        if (card.hp_boost > 0) card.owner.addMaxHP(card.hp_boost);
-        if (card.dmg_boost > 0 && card.buff_area === undefined)
-            card.owner.addDMG(card.dmg_boost);
+        if (card.data.speedBuff > 0) this.scene.worm.speed += card.data.speedBuff;
+        if (card.data.cooldownBuff > 0) {
+            this.scene.hud.HUDCards.forEach(c => {
+                if (c.cooldown > 300)
+                    c.cooldown -= card.data.cooldownBuff;
+            });
+        }
 
-        // SPAWNER RELATED
-        if (card.spawns && this.isCoastal) {
+        // SPAWNER
+        if (card.data.spawns && this.isCoastal) {
             this.scene.spawnerList.push(this);
             neighboors.forEach((n) => {
                 const tile = this.scene.map[this.indX + n[0]][this.indY + n[1]];
                 if (tile !== undefined) {
                     if (tile.type === "path") {
                         this.isSpawner = true;
-                        this.maxCooldown = card.cooldown;
-                        this.cooldown = card.cooldown;
-                        this.spawns = card.spawns;
+                        this.maxCooldown = card.data.spawnCooldown;
+                        this.cooldown = card.data.spawnCooldown;
+                        this.spawns = card.data.spawns;
                         this.spawnTiles.push(tile);
                     }
                 }
             });
-        }
-
-        // BUFF AREA RELATED
-        if (card.buff_area > 0) {
-            this.buff_area = card.buff_area;
-            for (let i = -card.buff_area; i <= card.buff_area; i++) {
-                for (let j = -card.buff_area; j <= card.buff_area; j++) {
-                    if (
-                        this.indX + i >= 0 &&
-                        this.indY + j >= 0 &&
-                        this.indX + i < this.scene.mapConfig.x &&
-                        this.indY + j < this.scene.mapConfig.y
-                    ) {
-                        const tile = this.scene.map[this.indX + i][this.indY + j];
-                        if (tile !== undefined && tile !== this && tile.type === "path") {
-                            if (card.direct_hp > 0) tile.direct_hp = card.direct_hp;
-                            if (card.dmg_boost > 0) tile.dmg_boost = card.dmg_boost;
-                            if (card.camouflage) {
-                                tile.camouflage = card.owner;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // DIRECT DAMAGE
-        if (card.direct_dmg) {
-            neighboors4.forEach((n) => {
-                const tile = this.scene.map[this.indX + n[0]][this.indY + n[1]];
-                if (tile !== undefined) {
-                    if (tile.type === "path") {
-                        tile.direct_dmg[1] = card.direct_dmg;
-                        tile.direct_dmg[0] = card.owner;
-                    }
-                }
-            });
-        }
-        // DIRECT MONEY
-        if (card.direct_money) {
-            neighboors4.forEach((n) => {
-                const tile = this.scene.map[this.indX + n[0]][this.indY + n[1]];
-                if (tile !== undefined) {
-                    if (tile.type === "path") {
-                        tile.direct_money[1] = card.direct_money;
-                        tile.direct_money[0] = card.owner;
-                    }
-                }
+            this.spawnTimer = this.scene.time.addEvent({
+                delay: this.maxCooldown,
+                callback: () => {
+                    // Spawns the entity every cooldown
+                    // First get the occupied tiles off
+                    let selectedTile = this.spawnTiles.filter(t => t.contains.length === 0);
+                    // Then random pick between the rest
+                    selectedTile = Phaser.Math.RND.pick(selectedTile);
+                    // Then spawn the shit
+                    EntityManager.spawnEntity(this.scene, this.spawns, selectedTile);
+                },
+                callbackScope: this,
+                loop: true
             });
         }
 
         this.scene.hud.toggleBuildOff();
-        this.scene.hud.toggleDiceOn();
-        card.remove();
+        card.disable();
         this.scene.emitUpdateHud();
 
-        //UPDATE AVAILABLE TILE LIST
-        if (card.coastal === true)
-            this.scene.availableCoastalTiles.splice(
-                this.scene.availableCoastalTiles.indexOf(this),
-                1
-            );
-        else
-            this.scene.availableLandTiles.splice(
-                this.scene.availableLandTiles.indexOf(this),
-                1
-            );
     }
 
     eraseMobs() {

@@ -56,6 +56,9 @@ export default class WormPart extends Phaser.GameObjects.Sprite {
             duration: this.worm.speed,
             onStartScope: this,
             onStart: function() {
+                if (this.isHead)
+                    t.containsWorm = true;
+
                 if (!this.isHead && !this.isTail) {
                     let newDir = 0;
                     if ((t.x > this.currentTile.x && t.y === this.currentTile.y) || (t.x < this.currentTile.x && t.y === this.currentTile.y))
@@ -87,6 +90,7 @@ export default class WormPart extends Phaser.GameObjects.Sprite {
                                 angle += -90;
                         }
 
+                        // Set angle of tail and head based on direction
                         this.direction = t.direction;
                         this.scene.tweens.add({
                             targets: this.sprite,
@@ -96,6 +100,7 @@ export default class WormPart extends Phaser.GameObjects.Sprite {
                         });
                     }
 
+                    // Refresh direction after worm shrinks/grows
                     if (this.toRefresh) {
                         this.refreshDirection();
                         this.toRefresh = false;
@@ -103,16 +108,27 @@ export default class WormPart extends Phaser.GameObjects.Sprite {
 
                 }
 
+                // Update of the new tile info
                 this.x = t.x;
                 this.y = t.y;
                 this.currentTile = t;
 
                 if (this.isHead) {
                     if (this.currentTile.pathInd === this.scene.path.length - 1) {
+                        // End of loop condition
                         this.worm.incLoopCount();
                     }
+                    // Recursive call to the movement functiion
                     this.worm.moveToNextTile();
+                    // Detect if tile contains stuff
                     this.tileDetection();
+                    // Update of the path, to exclude the worm
+                    this.scene.updateAvailablePath();
+                }
+                if (this.isTail) {
+                    this.currentTile.containsWorm = false;
+                    const ind = this.currentTile.pathInd - 1 < 0 ? this.scene.path.length - 1 : this.currentTile.pathInd - 1;
+                    this.scene.path[ind].containsWorm = false;
                 }
 
             }
@@ -211,62 +227,6 @@ export default class WormPart extends Phaser.GameObjects.Sprite {
     }
 
     refreshDirection() {
-        // TODO :: FORMATTING AND PRETTIFIYING THIS BAD CODE // WORKING ????
-
-
-        // Directions head/tail
-        // 0 - east | 90 - down 
-        // 180 - west | 270 - north
-
-        // let index = this.currentTile.pathInd >= this.scene.path.length - 1 ? 0 : this.currentTile.pathInd;
-
-        // const curTile = this.scene.path[index];
-
-        // let angle = 0;
-        // if (curTile.indX < this.scene.map.length / 2) {
-        //     if (curTile.indY < this.scene.map[0].length / 2) {
-        //         // console.log("top left ", curTile.indX, curTile.indY, curTile.direction);
-        //         if (curTile.direction === 3)
-        //             angle = 0;
-        //         if (curTile.direction === 1)
-        //             angle = 270;
-        //         if (curTile.direction === 5)
-        //             angle = 0;
-        //         if (curTile.direction === 0)
-        //             angle = 270;
-        //     } else {
-        //         // console.log("bottom left ", curTile.indX, curTile.indY, curTile.direction);
-        //         if (curTile.direction === 4 || curTile.direction === 1 || curTile.direction === 3)
-        //             angle = 180;
-        //         if (curTile.direction === 5)
-        //             angle = 90;
-        //         if (curTile.direction === 0)
-        //             angle = 270;
-        //     }
-        // } else {
-        //     if (curTile.indY < this.scene.map[0].length / 2) {
-        //         // console.log("top right ", curTile.indX, curTile.indY, curTile.direction);
-        //         if (curTile.direction === 3)
-        //             angle = 0;
-        //         if (curTile.direction === 1)
-        //             angle = 270;
-        //         if (curTile.direction === 5)
-        //             angle = 0;
-        //         if (curTile.direction === 2)
-        //             angle = 90;
-        //         if (curTile.direction === 0)
-        //             angle = 90;
-        //     } else {
-        //         // console.log("bottom right ", curTile.indX, curTile.indY, curTile.direction);
-        //         if (curTile.direction === 4 || curTile.direction === 1 || curTile.direction === 3)
-        //             angle = 180;
-        //         if (curTile.direction === 5)
-        //             angle = 90;
-        //         if (curTile.direction === 0)
-        //             angle = 90;
-        //     }
-        // }
-
         this.sprite.angle = this.currentTile.orientation;
     }
 
