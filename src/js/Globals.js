@@ -40,7 +40,7 @@ export const CARDS = {
         price: 6,
         eraser: true,
         cooldown: 10000, // 10000
-        info: "Makes stuff\ndisappears !"
+        info: "Clears one tile\nof any harm."
     },
     "Dispenser": {
         name: "Dispenser",
@@ -50,7 +50,7 @@ export const CARDS = {
         offsetSprite: 1,
         price: 9,
         cooldown: 10000,
-        info: "Drops one orb\nevery 12 seconds."
+        info: "Drops one orb\nevery 12 seconds\non adjacent tiles."
     },
     "Pill": {
         name: "Pill",
@@ -59,16 +59,25 @@ export const CARDS = {
         price: 11,
         speedBuff: SPEED_PER_PILL,
         cooldown: 10000,
-        info: "Calm down\nthe worm."
+        info: "Slow down\nthe worm"
     },
-    "Mushroom": {
-        name: "Mushroom",
+    "Wart": {
+        name: "Wart",
         cardType: "land",
-        offsetSprite: 3,
+        offsetSprite: 8,
         cooldownBuff: COOLDOWN_BUFF,
         price: 14,
         cooldown: 10000,
         info: "Reduce cooldown\nof all the cards."
+    },
+    "Mushroom": {
+        name: "Mushroom",
+        cardType: "coastal",
+        offsetSprite: 3,
+        shield: true,
+        price: 16,
+        cooldown: 20000, //20000
+        info: "Every adjacent\ntiles are protected."
     },
     "Crystal": {
         name: "Crystal",
@@ -78,6 +87,17 @@ export const CARDS = {
         spawnCooldown: 20000,
         price: 18,
         cooldown: 20000,
-        info: "Drops one\ncrystal fragment\nevery 20 seconds."
+        info: "Drops one\ncrystal fragment\nevery 20 seconds\non adjacent tiles."
     }
 }
+
+export const HURT_AUDIO = [
+    "hurt1",
+    "hurt2",
+    "hurt3",
+]
+export const EAT_AUDIO = [
+    "eat1",
+    "eat2",
+    "eat3",
+]

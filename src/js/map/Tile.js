@@ -37,6 +37,7 @@ export default class Tile extends Phaser.GameObjects.Sprite {
         this.containsWorm = false;
         this.spawns = null;
         this.isSpawner = false;
+        this.isProtected = false;
         this.spawnTiles = [];
         this.spawnTimer = null;
         this.cooldown = 0;
@@ -195,6 +196,7 @@ export default class Tile extends Phaser.GameObjects.Sprite {
             console.warn("contains", this.contains)
             console.warn("spawns", this.spawns)
             console.warn("spawnTiles", this.spawnTiles)
+            console.warn("isProtected", this.isProtected)
             console.warn("=======================")
         }
 
@@ -322,6 +324,33 @@ export default class Tile extends Phaser.GameObjects.Sprite {
                         this.spawnTiles.push(tile);
                     }
                 }
+            });
+            this.spawnTimer = this.scene.time.addEvent({
+                delay: this.maxCooldown,
+                callback: () => {
+                    // Spawns the entity every cooldown
+                    // First get the occupied tiles off
+                    let selectedTile = this.spawnTiles.filter(t => t.contains.length === 0);
+                    // Then random pick between the rest
+                    selectedTile = Phaser.Math.RND.pick(selectedTile);
+                    // Then spawn the shit
+                    EntityManager.spawnEntity(this.scene, this.spawns, selectedTile);
+                },
+                callbackScope: this,
+                loop: true
+            });
+        }
+
+        // SHIELD
+        if (card.data.shield && this.isCoastal) {
+            this.scene.spawnerList.push(this);
+            neighboors.forEach((n) => {
+                const tile = this.scene.map[this.indX + n[0]][this.indY + n[1]];
+                if (tile !== undefined)
+                    if (tile.type === "path")
+                    // if (n.type === 'path')
+                        tile.isProtected = true;
+
             });
             this.spawnTimer = this.scene.time.addEvent({
                 delay: this.maxCooldown,

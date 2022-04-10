@@ -11,6 +11,8 @@ export default class Worm extends Phaser.GameObjects.Sprite {
         this.x = tile.x;
         this.y = tile.y;
 
+        this.audio = null;
+
         // STATS
         this.speed = Globals.STARTING_SPEED;
         this.loopCount = 1;
@@ -75,6 +77,10 @@ export default class Worm extends Phaser.GameObjects.Sprite {
     }
 
     incSize() {
+        //Play sound
+        const eatAudio = Phaser.Math.RND.pick(Globals.EAT_AUDIO);
+        this.audio = this.scene.sound.play(eatAudio);
+
         // Increment worm size by one. This also lowers its speed (making the worm faster), does particle effects and emits an update HUD event
         const newTileInd = this.bodyPartList[this.bodyPartList.length - 1].currentTile.pathInd - 1;
         this.bodyPartList.splice(this.bodyPartList.length - 1, 0, new WormPart(this.scene, this, newTileInd));
@@ -96,6 +102,11 @@ export default class Worm extends Phaser.GameObjects.Sprite {
     }
 
     decSize() {
+
+        //Play sound
+        const hurtAudio = Phaser.Math.RND.pick(Globals.HURT_AUDIO);
+        this.audio = this.scene.sound.play(hurtAudio);
+
         // Decrement worm size by one. This also raises its speed (making the worm slower), does particles effects and emits an update HUD event
         if (this.bodySize > 2) {
             // If not dead...
@@ -116,7 +127,7 @@ export default class Worm extends Phaser.GameObjects.Sprite {
                     ease: 'Linear',
                     duration: this.speed / 1.5,
                     onCompleteScope: this,
-                    onComplete: function () {
+                    onComplete: function() {
                         toDestroy.sprite.destroy();
                     }
                 });

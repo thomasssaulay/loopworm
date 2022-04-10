@@ -70,6 +70,13 @@ export default class SceneMain extends Phaser.Scene {
             frameHeight: 64
         });
 
+        // AUDIO
+        this.load.audio("eat1", "audio/eat1.mp3");
+        this.load.audio("eat2", "audio/eat2.mp3");
+        this.load.audio("eat3", "audio/eat3.mp3");
+        this.load.audio("hurt1", "audio/hurt1.mp3");
+        this.load.audio("hurt2", "audio/hurt2.mp3");
+        this.load.audio("hurt3", "audio/hurt3.mp3");
     }
 
     create() {
@@ -126,23 +133,25 @@ export default class SceneMain extends Phaser.Scene {
     }
 
 
-    update(time, delta) { }
+    update(time, delta) {}
 
     handleInputs() {
-        this.input.keyboard.on("keydown", (event) => {
-            if (event.code === "ArrowLeft") {
-                this.worm.decSize();
-            }
-            if (event.code === "ArrowRight") {
-                this.worm.incSize();
-            }
-            if (event.code === "ArrowUp") {
-                this.hud.HUDCards[0].startCooldown();
-            }
-            if (event.code === "ArrowDown") {
-                this.hud.HUDCards[0].stopCooldown();
-            }
-        });
+        if (Globals.DEBUG_MODE) {
+            this.input.keyboard.on("keydown", (event) => {
+                if (event.code === "ArrowLeft") {
+                    this.worm.decSize();
+                }
+                if (event.code === "ArrowRight") {
+                    this.worm.incSize();
+                }
+                if (event.code === "ArrowUp") {
+                    this.hud.HUDCards[0].startCooldown();
+                }
+                if (event.code === "ArrowDown") {
+                    this.hud.HUDCards[0].stopCooldown();
+                }
+            });
+        }
     }
 
     emitUpdateHud() {
@@ -152,7 +161,7 @@ export default class SceneMain extends Phaser.Scene {
 
     updateAvailablePath() {
         // Compute available path
-        this.availablePathIncludingWorm = this.path.filter(tile => tile.contains.length === 0);
+        this.availablePathIncludingWorm = this.path.filter(tile => (tile.contains.length === 0 && !tile.isProtected));
         this.availablePathExludingWorm = this.availablePathIncludingWorm.filter(tile => tile.containsWorm === false);
 
         // NOT VERY EFFICIENT :: TODO

@@ -60,10 +60,10 @@ export default class HudScene extends Phaser.Scene {
 
         // Cards related
         this.HUDCardInfoBack = this.add
-            .sprite(this.width - 128, this.height + 64, "infocard", 0)
+            .sprite(this.width - 96, this.height + 64, "infocard", 0)
             .setOrigin(0.5, 0.5);
         this.HUDCardInfoText = this.add
-            .text(this.width - 128, this.height + 64, "", {
+            .text(this.width - 96, this.height + 64, "", {
                 font: "14pt PearSoda",
                 align: "center",
                 color: Globals.PALETTE_HEX[1]
@@ -74,6 +74,7 @@ export default class HudScene extends Phaser.Scene {
         this.addCard("Fog");
         this.addCard("Dispenser");
         this.addCard("Pill");
+        this.addCard("Wart");
         this.addCard("Mushroom");
         this.addCard("Crystal");
         this.HUDCards.forEach((card) => {
@@ -139,7 +140,7 @@ export default class HudScene extends Phaser.Scene {
                 this.showCardInfo(card);
                 if (card.data.cardType === "coastal") this.showCoastal();
                 if (card.data.cardType === "land") this.showLand();
-                if (card.data.cardType === "path") this.showPath();
+                if (card.data.cardType === "path" && !card.data.eraser) this.showPath();
             } else {
                 this.hideCardInfo();
                 this.toggleBuildOff();
@@ -192,8 +193,8 @@ export default class HudScene extends Phaser.Scene {
     }
 
     addCard(cardName) {
-        const offset_x = 96;
-        const offset_gap = 90;
+        const offset_x = 64;
+        const offset_gap = 86;
         const newCard = new Card(
             this,
             offset_x + offset_gap * this.HUDCards.length,
@@ -212,7 +213,7 @@ export default class HudScene extends Phaser.Scene {
                 ease: "Bounce",
                 duration: 500,
                 onCompleteScope: this,
-                onComplete: function () {
+                onComplete: function() {
                     this.cardInfoAnim = true;
                 }
             });
@@ -227,7 +228,7 @@ export default class HudScene extends Phaser.Scene {
                 ease: "Bounce",
                 duration: 500,
                 onCompleteScope: this,
-                onComplete: function () {
+                onComplete: function() {
                     this.cardInfoAnim = false;
                 }
             });
@@ -276,19 +277,19 @@ export default class HudScene extends Phaser.Scene {
         }
     }
     onNextWave() {
-        const nSpawn = this.sceneMain.data.difficulty * Phaser.Math.Between(1, 2) + Math.floor(this.sceneMain.worm.loopCount / 4) + Phaser.Math.Between(0, 2);
+        const nSpawn = this.sceneMain.data.difficulty * Phaser.Math.Between(1, 2) + Math.floor(this.sceneMain.worm.loopCount / 6) + Phaser.Math.Between(0, (this.sceneMain.data.difficulty + 1));
 
         for (let i = 0; i < nSpawn; i++) {
             EntityManager.spawnAtRandom(this.sceneMain, "norb", this.sceneMain.availablePathExludingWorm);
         }
 
-        console.warn("NEXT WAVE ! " + nSpawn + " NORBS SPAWNED !");
+        // console.warn("NEXT WAVE ! " + nSpawn + " NORBS SPAWNED !");
 
         const spikeChance = (this.sceneMain.data.difficulty + 1) * 0.2;
 
         if (this.sceneMain.worm.loopCount >= Globals.MIN_LOOP_TO_SPAWN_SPIKES && Math.random() < spikeChance) {
             EntityManager.spawnAtRandom(this.sceneMain, "spike", this.sceneMain.availablePathExludingWorm);
-            console.warn("AND ONE SPIKE");
+            // console.warn("AND ONE SPIKE");
         }
         this.startWaveTimer();
     }
